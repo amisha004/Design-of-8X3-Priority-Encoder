@@ -1,0 +1,78 @@
+
+
+.include /modelfile_65nm/minNminP.cir
+*.include /modelfile_65nm/typNtypP.cir
+ 
+.include PROJECT_FINAL.src.net
+ 
+*from netlist
+X1 A B C D1 D2 D3 D4 D5 D6 D7 Gnd Vdd PROJECT_FINAL_CHANGE
+ 
+.param SUPPLY = 1.08
+.Param tend = 150n
+ 
+.TEMP = 125
+ 
+c1 A Gnd 10f   *Load capacitance
+c2 B Gnd 10f
+c3 C Gnd 10f
+ 
+vd Vdd 0 SUPPLY
+vg Gnd 0 0
+ 
+ 
+*v0 D0 Gnd PULSE(0 SUPPLY 1n 10p 10p 5n 20n)
+v1 D1 Gnd PULSE(0 SUPPLY 1n 10p 10p 5n 20n)
+v2 D2 Gnd PULSE(0 SUPPLY 3n 10p 10p 5n 20n)
+v3 D3 Gnd PULSE(0 SUPPLY 5n 10p 10p 5n 20n)
+v4 D4 Gnd PULSE(0 SUPPLY 7n 10p 10p 5n 20n)
+v5 D5 Gnd PULSE(0 SUPPLY 9n 10p 10p 5n 20n)
+v6 D6 Gnd PULSE(0 SUPPLY 11n 10p 10p 5n 20n)
+v7 D7 Gnd PULSE(0 SUPPLY 13n 10p 10p 5n 20n)
+ 
+ 
+ 
+* D4 → A
+.measure TRAN TPLH_A
++ TRIG v(D4) VAL ='SUPPLY/2' RISE=1 
++ TARG v(A) VAL ='SUPPLY/2' RISE=1
+ 
+* D2 → B
+.measure TRAN TPLH_B
++ TRIG v(D2) VAL ='SUPPLY/2' RISE=1 
++ TARG v(B) VAL ='SUPPLY/2' RISE=1
+ 
+* D1 → C
+.measure TRAN TPLH_C
++ TRIG v(D1) VAL ='SUPPLY/2' RISE=1 
++ TARG v(C) VAL ='SUPPLY/2' RISE=1
+ 
+ 
+.measure TRAN TPHL_A 
++ TRIG v(D7) VAL ='SUPPLY/2' FALL=1 
++ TARG v(A) VAL ='SUPPLY/2' FALL=1
+ 
+.measure TRAN TPHL_B 
++ TRIG v(D4) VAL ='SUPPLY/2' RISE=1 
++ TARG v(B) VAL ='SUPPLY/2' FALL=1
+ 
+.measure TRAN TPHL_C 
++ TRIG v(D6) VAL ='SUPPLY/2' RISE=1 
++ TARG v(C) VAL ='SUPPLY/2' FALL=3
+ 
+ 
+* Power Calculations
+.measure leakage_current param = abs(I(vd))
+
+.extract label = dynamic_power(-1*(SUPPLY*(integ(I(vd), 6.88N, 27.85N)))*(1/27.85N-6.88N))
+ 
+*.mc 100 all 
+
+.probe v(*) v(X1.*)
+.probe i(*)
+ 
+ 
+.tran 1p tend
+ 
+ 
+.end
